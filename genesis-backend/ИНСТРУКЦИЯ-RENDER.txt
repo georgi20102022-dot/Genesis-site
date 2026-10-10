@@ -1,0 +1,42 @@
+﻿GENESIS CLIENT BACKEND — деплой на Render.com
+==============================================
+
+ЧТО ЭТО
+Node/TypeScript бэкенд сайта: регистрация, вход, профиль, друзья.
+Аккаунты сайта — по EMAIL и паролю (лаунчер отдельно ходит по нику,
+это разные системы, они не конфликтуют).
+Данные хранятся в файле data/users.json.
+
+КАК ЗАДЕПЛОИТЬ НА RENDER (через GitHub — рекомендуется)
+1. Создайте репозиторий на GitHub и залейте в него СОДЕРЖИМОЕ этой папки
+   (файлы src/server.ts, package.json, tsconfig.json, папка data/).
+2. Render Dashboard → New → Web Service → подключите этот репозиторий.
+3. Настройки сервиса:
+   - Root Directory: (пусто)
+   - Build Command: npm install && npm run build
+   - Start Command:  npm start
+   - Instance Type:  Free
+4. Environment Variables → добавить:
+   - TOKEN_SECRET = любая длинная случайная строка (секретный ключ сессий)
+   (PORT задаёт Render сам — прописывать не нужно)
+5. Нажать Deploy. Дождаться статуса Live.
+6. Проверка: откройте https://ВАШ-URL.onrender.com/api/health
+   Должно вернуться: {"ok":true,...}
+
+ПОДКЛЮЧЕНИЕ К САЙТУ НА CLOUDFLARE
+После деплоя бэкенда:
+1. Откройте папку genesis-deploy → файл _redirects
+2. Добавьте строку (подставьте свой URL Render):
+   /api/*  https://ВАШ-URL.onrender.com/api/:splat  200
+3. Залейте папку genesis-deploy заново через Create deployment
+4. Готово — регистрация и вход на сайте заработают
+
+ВАЖНО ПРО ХРАНИЛИЩЕ
+На бесплатном Render файловая система сбрасывается при перезапуске
+или новом деплое — аккаунты из data/users.json могут пропадать.
+Для постоянного хранения позже подключите Render Disk (путь /opt/render/project/src/data)
+или базу данных. Лаунчер и оплаты этим не затронуты — они работают
+через отдельный Render API (genesis-service).
+
+ОТКАТ
+Просто удалите Web Service на Render и строку /api/* из _redirects.
